@@ -1,1 +1,0 @@
-export { COLORS, SIZES, TIMING, MAP, ACCESSIBILITY } from './mapConstants';
