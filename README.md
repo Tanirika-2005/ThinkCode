@@ -1,56 +1,96 @@
-# Rural Bus ETA Tracker
+# Bus Route ETA SMS Service
 
-A lightweight, hackathon-friendly solution for tracking rural bus ETAs using SMS (Fast2SMS) and Google Maps.
+A Flask-based service that allows users to SMS their location and bus route number to get real-time ETA responses via SMS.
+
+## Overall Architecture
+User SMS → Webhook receives → Parse location & route → Google Maps API → Format response → Fast2SMS reply
 
 ## Features
+- SMS webhook endpoint for receiving incoming messages
+- SMS parsing for location and route number extraction
+- Google Maps API integration for ETA calculation
+- SMS response formatting
+- Fast2SMS integration for sending replies
+- Spam control to prevent excessive requests
+- Comprehensive error handling and logging
+- Health check endpoint
+- Docker support for easy deployment
 
-- FastAPI backend for handling HTTP requests
-- SMS simulation endpoint for testing
-- Integration with Fast2SMS for real SMS communication
-- Google Maps API for ETA calculations
-- Environment variable configuration
+## Prerequisites
+- Python 3.7+
+- Google Maps API key
+- Fast2SMS account and API key
 
-## Dependencies
+## Installation
 
-- `fastapi`: Modern, fast web framework for building APIs with Python 3.7+
-- `uvicorn`: ASGI server implementation for Python web applications
-- `python-dotenv`: For loading environment variables from .env file
-- `requests`: For making HTTP requests to external APIs
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd bus-eta-sms-service
+   ```
 
-## Setup
+2. Create a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-1. Install dependencies:
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-2. Configure environment variables in `.env` file:
-   - `FAST2SMS_API_KEY`: Your Fast2SMS API key
-   - `GOOGLE_MAPS_API_KEY`: Your Google Maps API key
-
-3. Run the server:
+4. Configure environment variables:
    ```
-   python main.py
+   cp .env.example .env
+   # Edit .env with your actual API keys and configuration
    ```
 
-4. Access the API documentation at `http://localhost:8000/docs`
+## Configuration
 
-## Endpoints
+Create a `.env` file with the following variables:
+- `GOOGLE_MAPS_API_KEY`: Your Google Maps API key
+- `FAST2SMS_API_KEY`: Your Fast2SMS API key
+- `FLASK_SECRET_KEY`: A secret key for Flask
+- `FLASK_ENV`: Environment (development/production)
+- `HOST`: Server host (default: 0.0.0.0)
+- `PORT`: Server port (default: 5000)
 
-### POST /simulate-sms
+## Usage
 
-Simulates receiving an SMS with user number and bus route.
+1. Start the development server:
+   ```
+   python app.py
+   ```
 
-**Form Parameters:**
-- `user_number` (required): Phone number of the user requesting ETA
-- `bus_route` (required): The bus route for which ETA is requested
+2. For production, use Gunicorn:
+   ```
+   gunicorn --bind 0.0.0.0:5000 app:app
+   ```
 
-**Response:**
-```json
-{
-  "message": "SMS received successfully",
-  "user_number": "string",
-  "bus_route": "string",
-  "status": "processing"
-}
-```
+## API Endpoints
+
+- `POST /webhook`: Webhook endpoint for incoming SMS
+- `GET /health`: Health check endpoint
+
+## SMS Format
+
+Users should send SMS messages in one of these formats:
+- "Location RouteNumber" (e.g., "MG Road 23")
+- "Location Route RouteNumber" (e.g., "Central Station Route 45")
+- "Location RRouteNumber" (e.g., "Bus Stop A R12")
+
+## Example
+
+Input: "MG Road Route 45"
+Output: "Route 45 from MG Road: Next bus in 12 mins at 2:30 PM. Next: 2:50 PM"
+
+## Deployment
+
+The application can be deployed using Docker. See `Dockerfile` for details.
+
+For cloud deployment, you can use platforms like Google Cloud Run, AWS ECS, or Heroku.
+
+## License
+
+MIT License
